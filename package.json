@@ -1,0 +1,42 @@
+{
+  "name": "dungeon-crawl",
+  "version": "0.0.0",
+  "description": "a rougue-like 2D dungeon game",
+  "main": "index.html",
+  "scripts": {
+    "build:pug": "pug src/index.pug -o .",
+    "build:webpack": "NODE_ENV=production webpack --config webpack.config.js",
+    "build": "npm run build:pug && npm run build:webpack",
+    "start:dev": "webpack-dev-server",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/KittenHero/dungeon-crawl.git"
+  },
+  "author": "kittenHero",
+  "license": "CC-BY-NC-4.0",
+  "bugs": {
+    "url": "https://github.com/KittenHero/dungeon-crawl/issues"
+  },
+  "homepage": "https://kittenhero.github.io/dungeon-crawl",
+  "dependencies": {
+    "konva": "^1.7.6",
+    "react": "^16.2.0",
+    "react-dom": "^16.2.0",
+    "react-konva": "^1.6.6",
+    "react-redux": "^5.0.6",
+    "redux": "^3.7.2"
+  },
+  "devDependencies": {
+    "babel-cli": "^6.26.0",
+    "babel-loader": "^7.1.2",
+    "babel-plugin-transform-react-jsx": "^6.24.1",
+    "babel-plugin-transform-react-pug": "^4.0.0",
+    "babel-preset-env": "^1.6.1",
+    "babel-preset-react": "^6.24.1",
+    "pug-cli": "^1.0.0-alpha6",
+    "webpack": "^3.11.0",
+    "webpack-dev-server": "^2.11.1"
+  }
+}
