@@ -1,9 +1,10 @@
 import React from 'react'
-import ReactDOM from 'react-dom'
+import { render } from 'react-dom'
+import { Provider } from 'react-redux'
+import DungeonCrawl from './dungeon-crawl'
+import store from './store'
 
-const Foo = () => pug`p test`
-
-ReactDOM.render(
-	pug`Foo`,
-	document.querySelector('main')
+render(pug`
+Provider(store=${store})
+	DungeonCrawl`, document.querySelector('main')
 )

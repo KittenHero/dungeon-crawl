@@ -4,12 +4,14 @@ module.exports = {
 	entry: './src/index.js',
 	output: {
 		filename: 'bundle.js',
-		path: path.join(__dirname, 'static')
+		path: path.join(__dirname, 'static'),
+		publicPath: '/static/'
 	},
 	module: {
-		loaders: [{
+		rules: [{
 			test: /\.js$/,
-			loaders: ['babel-loader'],
+			exclude: /node_modules/,
+			loader: 'babel-loader',
 			include: path.join(__dirname, 'src')
 		}]
 	}
