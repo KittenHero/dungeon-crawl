@@ -41,7 +41,7 @@ function generate_map({ width = 39, height = 39, room_min = 3, room_max = 9 } = 
 		if (top + h > height || left + w > width)
 			return 0
 
-		const occupied = cell => !!cell
+		const occupied = cell => !!cell.startsWith && cell.startsWith('floor_')
 		const top_left = width*top + left
 		// check for intersection : subset is ok
 		if (
@@ -65,11 +65,14 @@ function generate_map({ width = 39, height = 39, room_min = 3, room_max = 9 } = 
 				      y == 0 ? 'floor_n'
 				: y + 1 == h ? 'floor_s'
 				             : 'floor_' ,
-				start, start + w
+				start,
+				start + w
 			)
 			cells[start] += 'w'
 			cells[start + w - 1] += 'e'
 		}
+		cells.fill('wall', top_left - width, top_left - width + w)
+
 		return w*h - filled
 	}
 	
@@ -77,6 +80,9 @@ function generate_map({ width = 39, height = 39, room_min = 3, room_max = 9 } = 
 	while (room_floor > 0) {
 		room_floor -= place_rooms(cells)
 	}
+
+	const rooms = cells.map((x, i) => 'floor_nw' ? i : 0).filter(x => x)
+	console.log(rooms)
 
 	const exit = rchoice(cells.map((x, i) => x == 'floor_' ? i : 0).filter(x => x))
 	cells[exit] = 'exit'

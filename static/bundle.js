@@ -21253,20 +21253,23 @@ var DungeonCrawl = (_dec = (0, _reactRedux.connect)(function (state) {
 var Tile = function Tile(props) {
 	var crop = { width: 16, height: 16 };
 	switch (props.type) {
+		case 'wall':
+			crop = _extends({ x: 108, y: 48 }, crop);
+			break;
 		case 'floor_e':
 			crop = _extends({ x: 24, y: 16 }, crop);
 			break;
 		case 'floor_w':
 			crop = _extends({ x: 8, y: 16 }, crop);
 			break;
-		case 'floor_n':
-			crop = _extends({ x: 16, y: 8 }, crop);
-			break;
 		case 'floor_ne':
 			crop = _extends({ x: 24, y: 8 }, crop);
 			break;
 		case 'floor_nw':
 			crop = _extends({ x: 8, y: 8 }, crop);
+			break;
+		case 'floor_n':
+			crop = _extends({ x: 16, y: 8 }, crop);
 			break;
 		case 'floor_s':
 			crop = _extends({ x: 16, y: 24 }, crop);
@@ -21278,15 +21281,29 @@ var Tile = function Tile(props) {
 			crop = _extends({ x: 8, y: 24 }, crop);
 			break;
 		case 'floor_':
-			switch (Math.random() * 10 | 0) {
+			switch (Math.random() * 20 | 0) {
 				case 0:
-					crop = _extends({ x: 20, y: 12 }, crop);
-					break;
-				case 1:
 					crop = _extends({ x: 40, y: 8 }, crop);
 					break;
+				case 1:
+				case 2:
+					crop = _extends({ x: 14, y: 21 }, crop);
+					break;
 				default:
-					crop = { x: 12, y: 26, width: 4, height: 4 };
+					crop = { x: 16, y: 24, width: 4, height: 4 };
+			}
+			break;
+		case 'path':
+			switch (Math.random() * 20 | 0) {
+				case 0:
+				case 1:
+					crop = _extends({ x: 78, y: 12 }, crop);
+					break;
+				case 2:
+					crop = _extends({ x: 65, y: 9 }, crop);
+					break;
+				default:
+					crop = _extends({ x: 78, y: 22 }, crop);
 			}
 			break;
 		case 'exit':
@@ -49432,7 +49449,7 @@ function generate_map() {
 		if (top + h > height || left + w > width) return 0;
 
 		var occupied = function occupied(cell) {
-			return !!cell;
+			return !!cell.startsWith && cell.startsWith('floor_');
 		};
 		var top_left = width * top + left;
 		// check for intersection : subset is ok
@@ -49452,6 +49469,8 @@ function generate_map() {
 			cells[_start] += 'w';
 			cells[_start + w - 1] += 'e';
 		}
+		cells.fill('wall', top_left - width, top_left - width + w);
+
 		return w * h - filled;
 	};
 
@@ -49459,6 +49478,13 @@ function generate_map() {
 	while (room_floor > 0) {
 		room_floor -= place_rooms(cells);
 	}
+
+	var rooms = cells.map(function (x, i) {
+		return 'floor_nw' ? i : 0;
+	}).filter(function (x) {
+		return x;
+	});
+	console.log(rooms);
 
 	var exit = rchoice(cells.map(function (x, i) {
 		return x == 'floor_' ? i : 0;
