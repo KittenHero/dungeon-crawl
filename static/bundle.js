@@ -1958,6 +1958,8 @@ var _store2 = _interopRequireDefault(_store);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
+_store2.default.dispatch({ type: 'LOAD_SPRITES' });
+
 (0, _reactDom.render)(_react2.default.createElement(
 	_reactRedux.Provider,
 	{
@@ -21185,9 +21187,6 @@ var DungeonCrawl = (_dec = (0, _reactRedux.connect)(function (state) {
 	return {
 		generateMap: function generateMap() {
 			return dispatch({ type: 'GENERATE_MAP' });
-		},
-		loadSprites: function loadSprites() {
-			return dispatch({ type: 'LOAD_SPRITES' });
 		}
 	};
 }), _dec(_class = function (_Component) {
@@ -21206,7 +21205,6 @@ var DungeonCrawl = (_dec = (0, _reactRedux.connect)(function (state) {
 			    generateMap = _props.generateMap,
 			    loadSprites = _props.loadSprites;
 
-			loadSprites();
 			generateMap();
 		}
 	}, {
@@ -21255,12 +21253,47 @@ var DungeonCrawl = (_dec = (0, _reactRedux.connect)(function (state) {
 var Tile = function Tile(props) {
 	var crop = { width: 16, height: 16 };
 	switch (props.type) {
-		case 0:
-			crop = _extends({ x: 66, y: 54 }, crop);
+		case 'floor_e':
+			crop = _extends({ x: 24, y: 16 }, crop);
 			break;
-		case 1:
-			crop = _extends({ x: 40, y: 8 }, crop);
+		case 'floor_w':
+			crop = _extends({ x: 8, y: 16 }, crop);
 			break;
+		case 'floor_n':
+			crop = _extends({ x: 16, y: 8 }, crop);
+			break;
+		case 'floor_ne':
+			crop = _extends({ x: 24, y: 8 }, crop);
+			break;
+		case 'floor_nw':
+			crop = _extends({ x: 8, y: 8 }, crop);
+			break;
+		case 'floor_s':
+			crop = _extends({ x: 16, y: 24 }, crop);
+			break;
+		case 'floor_se':
+			crop = _extends({ x: 24, y: 24 }, crop);
+			break;
+		case 'floor_sw':
+			crop = _extends({ x: 8, y: 24 }, crop);
+			break;
+		case 'floor_':
+			switch (Math.random() * 10 | 0) {
+				case 0:
+					crop = _extends({ x: 20, y: 12 }, crop);
+					break;
+				case 1:
+					crop = _extends({ x: 40, y: 8 }, crop);
+					break;
+				default:
+					crop = { x: 12, y: 26, width: 4, height: 4 };
+			}
+			break;
+		case 'exit':
+			crop = _extends({ x: 176, y: 216 }, crop);
+			break;
+		default:
+			crop = { x: 98, y: 90, width: 4, height: 4 };
 	}
 	return _react2.default.createElement(_reactKonva.Image, {
 		image: props.sprite,
@@ -49357,6 +49390,13 @@ var boardManager = function boardManager() {
 	}
 };
 
+var rand = function rand(min, max) {
+	return min + Math.random() * (max - min);
+};
+var rchoice = function rchoice(arr) {
+	return arr[rand(0, arr.length) | 0];
+};
+
 function generate_map() {
 	var _ref = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {},
 	    _ref$width = _ref.width,
@@ -49369,9 +49409,64 @@ function generate_map() {
 	    room_max = _ref$room_max === undefined ? 9 : _ref$room_max;
 
 	var cells = new Array(width * height).fill(0);
-	var place_rooms = function place_rooms(cells) {
-		return cells;
+
+	var floor_percentile = rand(0.4, 0.6);
+
+	// place room on odd to seperate spaces
+	var step_odd = function step_odd(x) {
+		return 1 + (x / 2 | 0) * 2;
 	};
+	var rand_odd = function rand_odd(min, max) {
+		return step_odd(rand(min, max));
+	};
+
+	var place_rooms = function place_rooms(cells) {
+		var _ref2 = [rand_odd(0, height), rand_odd(0, width)],
+		    top = _ref2[0],
+		    left = _ref2[1];
+		var _ref3 = [rand_odd(room_min, room_max), rand_odd(room_min, room_max)],
+		    w = _ref3[0],
+		    h = _ref3[1];
+
+
+		if (top + h > height || left + w > width) return 0;
+
+		var occupied = function occupied(cell) {
+			return !!cell;
+		};
+		var top_left = width * top + left;
+		// check for intersection : subset is ok
+		if (cells.slice(top_left - width, top_left - width + w).some(occupied) || cells.slice(top_left + h * width, top_left + h * width + w).some(occupied)) return 0;
+		for (var y = 0; y < h; y++) {
+			var start = top_left + y * width;
+			if (occupied(cells[start - 1]) || occupied(cells[start + w])) return 0;
+		}
+
+		var filled = 0;
+		for (var _y = 0; _y < h; _y++) {
+			var _start = top_left + _y * width;
+			filled += cells.slice(_start, _start + w).reduce(function (acc, elem) {
+				return acc + occupied(elem);
+			}, 0);
+			cells.fill(_y == 0 ? 'floor_n' : _y + 1 == h ? 'floor_s' : 'floor_', _start, _start + w);
+			cells[_start] += 'w';
+			cells[_start + w - 1] += 'e';
+		}
+		return w * h - filled;
+	};
+
+	var room_floor = width * height * floor_percentile | 0;
+	while (room_floor > 0) {
+		room_floor -= place_rooms(cells);
+	}
+
+	var exit = rchoice(cells.map(function (x, i) {
+		return x == 'floor_' ? i : 0;
+	}).filter(function (x) {
+		return x;
+	}));
+	cells[exit] = 'exit';
+
 	return { width: width, height: height, cells: cells };
 }
 
