@@ -37,13 +37,13 @@ const Tile = props => {
 	let crop = { width: 16, height: 16 }
 	switch (props.type) {
 		case 'wall':
-			crop = {x:108, y:48, ...crop }
+			crop = {x:108, y:48, ...crop}
 			break
 		case 'floor_e':
-			crop = {x:24, y:16, ...crop}
+			crop = {x:24, y:21, ...crop}
 			break
 		case 'floor_w':
-			crop = {x:8, y:16, ...crop}
+			crop = {x:8, y:21, ...crop}
 			break
 		case 'floor_ne':
 			crop = {x:24, y:8, ...crop}
@@ -52,7 +52,7 @@ const Tile = props => {
 			crop = {x:8, y:8, ...crop}
 			break
 		case 'floor_n':
-			crop = {x:16, y:8, ...crop}
+			crop = {x:20, y:8, ...crop}
 			break
 		case 'floor_s':
 			crop = {x:16, y:24, ...crop}
@@ -70,14 +70,14 @@ const Tile = props => {
 					break
 				case 1:
 				case 2:
-					crop = {x:14, y:21, ...crop}
+					crop = {x:12, y:12, ...crop}
 					break
 				default:
 					crop = {x:16, y:24, width:4, height:4}
 			}
 			break
 		case 'path':
-			switch (Math.random()*20 | 0) {
+			switch (Math.random()*5 | 0) {
 				case 0:
 				case 1:
 					crop = {x:78, y:12, ...crop}

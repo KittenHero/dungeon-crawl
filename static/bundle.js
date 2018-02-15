@@ -21257,10 +21257,10 @@ var Tile = function Tile(props) {
 			crop = _extends({ x: 108, y: 48 }, crop);
 			break;
 		case 'floor_e':
-			crop = _extends({ x: 24, y: 16 }, crop);
+			crop = _extends({ x: 24, y: 21 }, crop);
 			break;
 		case 'floor_w':
-			crop = _extends({ x: 8, y: 16 }, crop);
+			crop = _extends({ x: 8, y: 21 }, crop);
 			break;
 		case 'floor_ne':
 			crop = _extends({ x: 24, y: 8 }, crop);
@@ -21269,7 +21269,7 @@ var Tile = function Tile(props) {
 			crop = _extends({ x: 8, y: 8 }, crop);
 			break;
 		case 'floor_n':
-			crop = _extends({ x: 16, y: 8 }, crop);
+			crop = _extends({ x: 20, y: 8 }, crop);
 			break;
 		case 'floor_s':
 			crop = _extends({ x: 16, y: 24 }, crop);
@@ -21287,14 +21287,14 @@ var Tile = function Tile(props) {
 					break;
 				case 1:
 				case 2:
-					crop = _extends({ x: 14, y: 21 }, crop);
+					crop = _extends({ x: 12, y: 12 }, crop);
 					break;
 				default:
 					crop = { x: 16, y: 24, width: 4, height: 4 };
 			}
 			break;
 		case 'path':
-			switch (Math.random() * 20 | 0) {
+			switch (Math.random() * 5 | 0) {
 				case 0:
 				case 1:
 					crop = _extends({ x: 78, y: 12 }, crop);
@@ -49429,71 +49429,159 @@ function generate_map() {
 
 	var floor_percentile = rand(0.4, 0.6);
 
-	// place room on odd to seperate spaces
-	var step_odd = function step_odd(x) {
-		return 1 + (x / 2 | 0) * 2;
-	};
-	var rand_odd = function rand_odd(min, max) {
-		return step_odd(rand(min, max));
-	};
-
-	var place_rooms = function place_rooms(cells) {
-		var _ref2 = [rand_odd(0, height), rand_odd(0, width)],
-		    top = _ref2[0],
-		    left = _ref2[1];
-		var _ref3 = [rand_odd(room_min, room_max), rand_odd(room_min, room_max)],
-		    w = _ref3[0],
-		    h = _ref3[1];
-
-
-		if (top + h > height || left + w > width) return 0;
-
-		var occupied = function occupied(cell) {
-			return !!cell.startsWith && cell.startsWith('floor_');
-		};
-		var top_left = width * top + left;
-		// check for intersection : subset is ok
-		if (cells.slice(top_left - width, top_left - width + w).some(occupied) || cells.slice(top_left + h * width, top_left + h * width + w).some(occupied)) return 0;
-		for (var y = 0; y < h; y++) {
-			var start = top_left + y * width;
-			if (occupied(cells[start - 1]) || occupied(cells[start + w])) return 0;
-		}
-
-		var filled = 0;
-		for (var _y = 0; _y < h; _y++) {
-			var _start = top_left + _y * width;
-			filled += cells.slice(_start, _start + w).reduce(function (acc, elem) {
-				return acc + occupied(elem);
-			}, 0);
-			cells.fill(_y == 0 ? 'floor_n' : _y + 1 == h ? 'floor_s' : 'floor_', _start, _start + w);
-			cells[_start] += 'w';
-			cells[_start + w - 1] += 'e';
-		}
-		cells.fill('wall', top_left - width, top_left - width + w);
-
-		return w * h - filled;
-	};
-
 	var room_floor = width * height * floor_percentile | 0;
 	while (room_floor > 0) {
-		room_floor -= place_rooms(cells);
+		room_floor -= place_room(cells, width, height, room_min, room_max);
+	}
+	connect_rooms(cells, width, height);
+	place_exit(cells);
+
+	return { width: width, height: height, cells: cells };
+}
+
+var step_odd = function step_odd(x) {
+	return 1 + (x / 2 | 0) * 2;
+};
+var rand_odd = function rand_odd(min, max) {
+	return step_odd(rand(min, max));
+};
+
+function place_room(cells, width, height, room_min, room_max) {
+	// place room on odd to seperate spaces
+	var _ref2 = [rand_odd(0, height), rand_odd(0, width)],
+	    top = _ref2[0],
+	    left = _ref2[1];
+	var _ref3 = [rand_odd(room_min, room_max), rand_odd(room_min, room_max)],
+	    w = _ref3[0],
+	    h = _ref3[1];
+
+
+	if (top + h > height || left + w > width) return 0;
+
+	var occupied = function occupied(cell) {
+		return !!cell.startsWith && cell.startsWith('floor_');
+	};
+	var top_left = width * top + left;
+	// check for intersection : subset is ok
+	if (cells.slice(top_left - width, top_left - width + w).some(occupied) || cells.slice(top_left + h * width, top_left + h * width + w).some(occupied)) return 0;
+	for (var y = 0; y < h; y++) {
+		var start = top_left + y * width;
+		if (occupied(cells[start - 1]) || occupied(cells[start + w])) return 0;
 	}
 
+	var filled = 0;
+	for (var _y = 0; _y < h; _y++) {
+		var _start = top_left + _y * width;
+		filled += cells.slice(_start, _start + w).reduce(function (acc, elem) {
+			return acc + occupied(elem);
+		}, 0);
+		cells.fill(_y == 0 ? 'floor_n' : _y + 1 == h ? 'floor_s' : 'floor_', _start, _start + w);
+		cells[_start] += 'w';
+		cells[_start + w - 1] += 'e';
+	}
+	cells.fill('wall', top_left - width, top_left - width + w);
+
+	return w * h - filled;
+}
+
+function connect_rooms(cells, width, height) {
 	var rooms = cells.map(function (x, i) {
-		return 'floor_nw' ? i : 0;
+		return x == 'floor_nw' ? i : 0;
 	}).filter(function (x) {
 		return x;
 	});
-	console.log(rooms);
+	var walls = rooms.map(function (nw) {
+		var cur = nw;
 
+		var walls = [cur];
+		while (cells[++cur].endsWith('n')) {
+			walls.push(cur);
+		}walls.push(cur);
+
+		var diff = cur - nw;
+		for (cur = nw + width; cells[cur].endsWith('_w'); cur += width) {
+			walls.push(cur, cur + diff);
+		}return walls.concat(new Array(diff + 1).fill().map(function (e, i) {
+			return i + cur;
+		}));
+	});
+
+	walls.reduce(function (big, small) {
+
+		var candidates = [];
+
+		for (var _path = 2; !candidates.length; _path += 2) {
+			var _loop = function _loop(wall) {
+				if (/n(w|e)?$/.test(cells[wall]) && big.includes(wall - _path * width)) candidates.push(new Array(_path).fill().map(function (e, i) {
+					return wall - i * width;
+				}).slice(1));else if (cells[wall].endsWith('w') && big.includes(wall - _path)) candidates.push(new Array(_path).fill().map(function (e, i) {
+					return wall - i;
+				}).slice(1));
+			};
+
+			var _iteratorNormalCompletion = true;
+			var _didIteratorError = false;
+			var _iteratorError = undefined;
+
+			try {
+				for (var _iterator = small[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+					var wall = _step.value;
+
+					_loop(wall);
+				}
+			} catch (err) {
+				_didIteratorError = true;
+				_iteratorError = err;
+			} finally {
+				try {
+					if (!_iteratorNormalCompletion && _iterator.return) {
+						_iterator.return();
+					}
+				} finally {
+					if (_didIteratorError) {
+						throw _iteratorError;
+					}
+				}
+			}
+		}
+
+		var path = rchoice(candidates);
+		var _iteratorNormalCompletion2 = true;
+		var _didIteratorError2 = false;
+		var _iteratorError2 = undefined;
+
+		try {
+			for (var _iterator2 = path[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+				var step = _step2.value;
+
+				cells[step] = 'path';
+			}
+		} catch (err) {
+			_didIteratorError2 = true;
+			_iteratorError2 = err;
+		} finally {
+			try {
+				if (!_iteratorNormalCompletion2 && _iterator2.return) {
+					_iterator2.return();
+				}
+			} finally {
+				if (_didIteratorError2) {
+					throw _iteratorError2;
+				}
+			}
+		}
+
+		return big.concat(small, path);
+	});
+}
+
+function place_exit(cells) {
 	var exit = rchoice(cells.map(function (x, i) {
 		return x == 'floor_' ? i : 0;
 	}).filter(function (x) {
 		return x;
 	}));
 	cells[exit] = 'exit';
-
-	return { width: width, height: height, cells: cells };
 }
 
 exports.spriteManager = spriteManager;

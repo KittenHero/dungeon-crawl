@@ -30,64 +30,113 @@ function generate_map({ width = 39, height = 39, room_min = 3, room_max = 9 } = 
 
 	const floor_percentile = rand(0.4, 0.6)
 
-	// place room on odd to seperate spaces
-	const step_odd = x => 1 + (x/2 | 0)*2
-	const rand_odd = (min, max) => step_odd(rand(min, max))
-
-	const place_rooms = cells => {
-		const [top, left] = [rand_odd(0, height), rand_odd(0, width)]
-		const [w, h] = [rand_odd(room_min, room_max), rand_odd(room_min, room_max)]
-
-		if (top + h > height || left + w > width)
-			return 0
-
-		const occupied = cell => !!cell.startsWith && cell.startsWith('floor_')
-		const top_left = width*top + left
-		// check for intersection : subset is ok
-		if (
-			cells.slice(top_left - width, top_left - width + w).some(occupied)
-			||
-			cells.slice(top_left + h*width, top_left + h*width + w).some(occupied)
-		)
-			return 0
-		for (let y = 0; y < h; y++) {
-			const start = top_left + y*width
-			if (occupied(cells[start - 1]) || occupied(cells[start + w]))
-				return 0
-		}
-
-		let filled = 0
-		for (let y = 0; y < h; y++) {
-			const start = top_left + y*width
-			filled += cells.slice(start, start + w)
-				.reduce((acc, elem) => acc + occupied(elem), 0)
-			cells.fill(
-				      y == 0 ? 'floor_n'
-				: y + 1 == h ? 'floor_s'
-				             : 'floor_' ,
-				start,
-				start + w
-			)
-			cells[start] += 'w'
-			cells[start + w - 1] += 'e'
-		}
-		cells.fill('wall', top_left - width, top_left - width + w)
-
-		return w*h - filled
-	}
-	
 	let room_floor = width * height * floor_percentile | 0
 	while (room_floor > 0) {
-		room_floor -= place_rooms(cells)
+		room_floor -= place_room(cells, width, height, room_min, room_max)
 	}
-
-	const rooms = cells.map((x, i) => 'floor_nw' ? i : 0).filter(x => x)
-	console.log(rooms)
-
-	const exit = rchoice(cells.map((x, i) => x == 'floor_' ? i : 0).filter(x => x))
-	cells[exit] = 'exit'
+	connect_rooms(cells, width, height)
+	place_exit(cells)
 
 	return { width, height, cells }
+}
+
+const step_odd = x => 1 + (x/2 | 0)*2
+const rand_odd = (min, max) => step_odd(rand(min, max))
+
+function place_room(cells, width, height, room_min, room_max) {
+	// place room on odd to seperate spaces
+	const [top, left] = [rand_odd(0, height), rand_odd(0, width)]
+	const [w, h] = [rand_odd(room_min, room_max), rand_odd(room_min, room_max)]
+
+	if (top + h > height || left + w > width)
+		return 0
+
+	const occupied = cell => !!cell.startsWith && cell.startsWith('floor_')
+	const top_left = width*top + left
+	// check for intersection : subset is ok
+	if (
+		cells.slice(top_left - width, top_left - width + w).some(occupied)
+		||
+		cells.slice(top_left + h*width, top_left + h*width + w).some(occupied)
+	)
+		return 0
+	for (let y = 0; y < h; y++) {
+		const start = top_left + y*width
+		if (occupied(cells[start - 1]) || occupied(cells[start + w]))
+			return 0
+	}
+
+	let filled = 0
+	for (let y = 0; y < h; y++) {
+		const start = top_left + y*width
+		filled += cells.slice(start, start + w)
+			.reduce((acc, elem) => acc + occupied(elem), 0)
+		cells.fill(
+			      y == 0 ? 'floor_n'
+			: y + 1 == h ? 'floor_s'
+			             : 'floor_' ,
+			start,
+			start + w
+		)
+		cells[start] += 'w'
+		cells[start + w - 1] += 'e'
+	}
+	cells.fill('wall', top_left - width, top_left - width + w)
+
+	return w*h - filled
+}
+
+function connect_rooms(cells, width, height) {
+	const rooms = cells.map((x, i) => x == 'floor_nw' ? i : 0).filter(x => x)
+	const walls = rooms.map(nw => {
+		let cur = nw
+
+		const walls = [cur]
+		while (cells[++cur].endsWith('n'))
+			walls.push(cur)
+		walls.push(cur)
+
+		const diff = cur - nw
+		for (cur = nw + width; cells[cur].endsWith('_w'); cur += width)
+			walls.push(cur, cur + diff)
+
+		return walls.concat(new Array(diff + 1).fill().map((e, i) => i + cur))
+	})
+
+	walls.reduce((big, small) => {
+
+		let candidates = []
+
+		for (let path = 2; !candidates.length; path += 2) {
+		for (const wall of small) {
+			if (/n(w|e)?$/.test(cells[wall]) && big.includes(wall - path*width))
+				candidates.push(
+					new Array(path).fill().map(
+						(e, i) => wall - i*width
+					).slice(1)
+				)
+			else if (cells[wall].endsWith('w') && big.includes(wall - path))
+				candidates.push(
+					new Array(path).fill().map(
+						(e, i) => wall - i
+					).slice(1)
+				)
+		}
+		}
+
+		let path = rchoice(candidates)
+		for (const step of path)
+			cells[step] = 'path'
+
+		return big.concat(small, path)
+	})
+
+
+}
+
+function place_exit(cells) {
+	const exit = rchoice(cells.map((x, i) => x == 'floor_' ? i : 0).filter(x => x))
+	cells[exit] = 'exit'
 }
 
 export { spriteManager, boardManager }
