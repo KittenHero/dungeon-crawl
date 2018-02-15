@@ -36,6 +36,7 @@ function generate_map({ width = 39, height = 39, room_min = 3, room_max = 9 } = 
 	}
 	connect_rooms(cells, width, height)
 	place_exit(cells)
+	place_walls(cells, width, height)
 
 	return { width, height, cells }
 }
@@ -81,7 +82,6 @@ function place_room(cells, width, height, room_min, room_max) {
 		cells[start] += 'w'
 		cells[start + w - 1] += 'e'
 	}
-	cells.fill('wall', top_left - width, top_left - width + w)
 
 	return w*h - filled
 }
@@ -104,6 +104,9 @@ function connect_rooms(cells, width, height) {
 	})
 
 	walls.reduce((big, small) => {
+		if (small.find(cell => big.includes(cell)))
+			return big.concat(small)
+
 		const candidates = []
 
 		for (let path = 2; !candidates.length; path += 2) {
@@ -147,8 +150,16 @@ function connect_rooms(cells, width, height) {
 	})
 }
 
+function place_walls(cells, width, height) {
+	for (let i = 0; i < cells.length; i++)
+		if (!cells[i] && !!cells[i + width])
+			cells[i] = 'wall'
+}
+
 function place_exit(cells) {
-	const exit = rchoice(cells.map((x, i) => x == 'floor_' ? i : 0).filter(x => x))
+	const exit = rchoice(
+		cells.map((x, i) => x == 'floor_' ? i : 0).filter(x => x)
+	)
 	cells[exit] = 'exit'
 }
 
