@@ -104,34 +104,47 @@ function connect_rooms(cells, width, height) {
 	})
 
 	walls.reduce((big, small) => {
-
-		let candidates = []
+		const candidates = []
 
 		for (let path = 2; !candidates.length; path += 2) {
 		for (const wall of small) {
-			if (/n(w|e)?$/.test(cells[wall]) && big.includes(wall - path*width))
+			if (/n(?:w|e)?$/.test(cells[wall]) && big.includes(wall - path*width))
 				candidates.push(
 					new Array(path).fill().map(
 						(e, i) => wall - i*width
 					).slice(1)
 				)
-			else if (cells[wall].endsWith('w') && big.includes(wall - path))
+			else if (
+				cells[wall].endsWith('w')
+				&& wall%width > path
+				&& big.includes(wall - path)
+			)
 				candidates.push(
 					new Array(path).fill().map(
 						(e, i) => wall - i
+					).slice(1)
+				)
+			else if (
+				cells[wall].endsWith('e')
+				&& (wall%width) + path < width
+				&& big.includes(wall + path)
+			)
+				candidates.push(
+					new Array(path).fill().map(
+						(e, i) => wall + i
 					).slice(1)
 				)
 		}
 		}
 
 		let path = rchoice(candidates)
-		for (const step of path)
-			cells[step] = 'path'
+		for (const step of path) {
+			const cur = cells[step]
+			cells[step] = !!cur && cur != 'wall' ? cur : 'path'
+		}
 
 		return big.concat(small, path)
 	})
-
-
 }
 
 function place_exit(cells) {

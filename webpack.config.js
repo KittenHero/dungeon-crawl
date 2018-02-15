@@ -16,5 +16,7 @@ module.exports = {
 			include: path.join(__dirname, 'src')
 		}]
 	},
-	plugins: [new webpack.optimize.UglifyJsPlugin({ compress: {warnings: false} })]
 }
+if (process.env.NODE_ENV == 'production')
+
+	module.exports.plugins = [new webpack.optimize.UglifyJsPlugin({ compress: {warnings: false} })]
