@@ -1,4 +1,4 @@
-import { assetLoader } from './asset-loader'
+import assetLoader from './asset-loader'
 import { boardManager, occupied } from './board-manager'
 import  { spriteManager } from './sprite-manager'
 

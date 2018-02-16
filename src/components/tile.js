@@ -1,3 +1,6 @@
+import React from 'react'
+import { Image } from 'react-konva'
+
 const Tile = props => {
 	let crop = { width: 16, height: 16 }
 	switch (props.type) {

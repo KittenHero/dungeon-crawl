@@ -1,8 +1,8 @@
 import React, { Component } from 'react'
+import { Stage, Layer } from 'react-konva'
 import { connect } from 'react-redux'
-import { Stage, Layer, Image, Group, Rect, Path } from 'react-konva'
-import { Map } from './map'
-import { Tile } from './tile'
+import Map from './map'
+import Tile from './tile'
 
 @connect(
 	state => ({ sprites: state.sprites, board: state.board }),
@@ -28,8 +28,8 @@ Stage(ref='stage' width=${960} height=${640})
 			)
 	Layer(x=624)
 		Map(
-			width=${board.width} height=${board.height}
-			seen=${board.cells}
+			width=336 height=336
+			seen=${board}
 		)`
 	}
 }

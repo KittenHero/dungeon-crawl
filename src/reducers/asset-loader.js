@@ -13,4 +13,4 @@ const assetLoader = ({ dispatch, getState }) => next => action => {
 	}
 }
 
-export default assetLoader;
+export default assetLoader
