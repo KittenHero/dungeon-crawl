@@ -1,6 +1,5 @@
 import { createStore, combineReducers, applyMiddleware } from 'redux'
-import { boardManager, spriteManager } from './reducers'
-import assetLoader from './asset-loader'
+import { boardManager, spriteManager, assetLoader } from './reducers'
 
 const store = createStore(
 	combineReducers({

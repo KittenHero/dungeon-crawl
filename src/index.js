@@ -1,7 +1,7 @@
 import React from 'react'
 import { render } from 'react-dom'
 import { Provider } from 'react-redux'
-import DungeonCrawl from './dungeon-crawl'
+import { DungeonCrawl } from './components'
 import store from './store'
 
 store.dispatch({ type: 'LOAD_SPRITES' })

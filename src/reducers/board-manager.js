@@ -1,12 +1,3 @@
-const spriteManager = (state = {}, action) => {
-	switch (action.type) {
-		case 'SPRITE_LOADED':
-			return {...state, ...action.payload}
-		default:
-			return state
-	}
-}
-
 const default_board = {
 	width: 0, height: 0,
 	cells: new Array(0)
@@ -20,6 +11,10 @@ const boardManager = (state = default_board, action) => {
 			return state
 	}
 }
+
+const occupied = cell => !!cell && cell != 'wall'
+
+export { boardManager, occupied }
 
 const rand = (min, max) => min + Math.random()*(max - min)
 const rchoice = arr => arr[rand(0, arr.length) | 0]
@@ -52,7 +47,6 @@ function place_room(cells, width, height, room_min, room_max) {
 	if (top + h > height || left + w > width)
 		return 0
 
-	const occupied = cell => !!cell.startsWith && cell.startsWith('floor_')
 	const top_left = width*top + left
 	// check for intersection : subset is ok
 	if (
@@ -162,5 +156,3 @@ function place_exit(cells) {
 	)
 	cells[exit] = 'exit'
 }
-
-export { spriteManager, boardManager }
