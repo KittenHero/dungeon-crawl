@@ -50,7 +50,7 @@ class Board {
 	update(dt, input) {
 		if (this.player.state !== Player.state.accept) {
 			this.anim_timer += dt
-			if (this.anim_timer > this.anim_cycle) {
+			if (this.anim_timer >= this.anim_cycle) {
 				this.anim_timer = 0
 				this.player.state = Player.state.accept
 				this.player.x = Math.round(this.player.x)
