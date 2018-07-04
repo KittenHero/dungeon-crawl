@@ -1,7 +1,7 @@
 const SPRITE_DATA = {
 	grid_size : 16,
 	tiles : {
-		src : 'assets/tiles/CB-TempleDungeon/CB-Temple-A.png',
+		src : 'assets/tiles/CB-TempleDungeon/CB-Temple-B.png',
 		crop: {
 			bg:      {x:  98, y:  90, width:  4, height:  4},
 			exit:    {x: 176, y: 216, width: 16, height: 16},
@@ -20,7 +20,7 @@ const SPRITE_DATA = {
 				case 1: case 2:
 					return {x:  12, y:  12, width: 16, height: 16}
 				default:
-					return {x:  16, y:  24, width:  4, height: 4}
+					return {x:  16, y:  24, width:  4, height:  4}
 				}
 			},
 			get wall() {
@@ -28,9 +28,9 @@ const SPRITE_DATA = {
 				case 0:
 					return {x: 144, y: 114, width: 16, height: 16}
 				case 1:
-						return {x:  72, y: 106, width: 16, height: 16}
+					return {x:  72, y: 106, width: 16, height: 16}
 				default:
-						return {x: 108, y:  50, width: 16, height: 16}
+					return {x: 108, y:  50, width: 16, height: 16}
 				}
 			},
 			get path() {

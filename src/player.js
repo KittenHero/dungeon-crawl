@@ -3,7 +3,9 @@ class Player {
 		return {
 			accept: 0,
 			up: 1, down: 2,
-			left: 3, right: 4
+			left: 3, right: 4,
+			upleft: 5, upright: 6,
+			downleft: 7, downright: 8
 		}
 	}
 	constructor(spawnable, width, sprite) {
@@ -19,14 +21,28 @@ class Player {
 		switch (this.state) {
 		case Player.state.accept:
 			const pos = this.x + this.y * width
-			if (input.left && cells[pos - 1] !== Board.celltype.empty)
+			if (input.up) {
+				const above = pos - width
+				if (input.left && cells[above - 1] !== Board.celltype.empty)
+					this.state = Player.state.upleft
+				else if (input.right && cells[above + 1] !== Board.celltype.empty)
+					this.state = Player.state.upright
+				else if (!this.left && !this.right && cells[above] !== Board.celltype.empty)
+					this.state = Player.state.up
+			}
+			else if (input.down) {
+				const below = pos + width
+				if (input.left && cells[below - 1] !== Board.celltype.empty)
+					this.state = Player.state.downleft
+				else if (input.right && cells[below + 1] !== Board.celltype.empty)
+					this.state = Player.state.downright
+				else if (!this.left && !this.right && cells[below] !== Board.celltype.empty)
+					this.state = Player.state.down
+			}
+			else if (input.left && !input.right && cells[pos - 1] !== Board.celltype.empty)
 				this.state = Player.state.left
-			if (input.right && cells[pos + 1] !== Board.celltype.empty)
+			else if (input.right && !input.left && cells[pos + 1] !== Board.celltype.empty)
 				this.state = Player.state.right
-			if (input.up && cells[pos - width] !== Board.celltype.empty)
-				this.state = Player.state.up
-			if (input.down && cells[pos + width] !== Board.celltype.empty)
-				this.state = Player.state.down
 			return
 		case Player.state.left:
 			this.x -= dtu
@@ -41,6 +57,22 @@ class Player {
 			return
 		case Player.state.down:
 			this.y += dtu
+			return
+		case Player.state.upleft:
+			this.y -= dtu
+			this.x -= dtu
+			return
+		case Player.state.upright:
+			this.y -= dtu
+			this.x += dtu
+			return
+		case Player.state.downleft:
+			this.y += dtu
+			this.x -= dtu
+			return
+		case Player.state.downright:
+			this.y += dtu
+			this.x += dtu
 			return
 		}
 	}

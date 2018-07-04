@@ -76,9 +76,7 @@ class Board {
 
 		const spritefrom = itemtype => {
 			switch (itemtype) {
-			case Board.itemtype.enemy0:
-			case Board.itemtype.player:
-			case Board.itemtype.weapon0:
+			case Board.itemtype.weapon:
 			case Board.itemtype.health:
 				return this.sprites.health
 			}
@@ -94,15 +92,16 @@ class Board {
 			this.canvas, 0, 0, sscl * this.width, sscl * this.height,
 			0, 0, this.width, this.height
 		)
+		const anim_percent = this.anim_timer / this.anim_cycle
 		for (const item of this.items) {
-			const sprites = spritefrom(item.type)
-			const crop = sprites.crop[0]
+			const sprites = this.sprites.health
+			const crop = sprites.crop[anim_percent * sprites.crop.length | 0]
 			ctx.drawImage(
 				sprites.img, crop.x, crop.y, crop.width, crop.height,
 				item.pos % this.width, item.pos / this.width | 0, 1, 1
 			)
 		}
-		this.player.render(ctx, this.anim_timer / this.anim_cycle)
+		this.player.render(ctx, anim_percent)
 		ctx.restore()
 	}
 
@@ -222,7 +221,7 @@ class Board {
 				health: Utils.rand(20, 100) | 0
 			}))
 
-		items.push({ type: Board.itemtype.weapon0 })
+		items.push({ type: Board.itemtype.weapon })
 		while (-1 != items.findIndex((itm, i, a) => a.slice(0, i).some(o => itm.pos == o.pos)))
 			items.forEach(itm => itm.pos = Utils.rchoice(free))
 		this.player = new Player(free.filter(e => !items.find(i => i.pos == e)), this.width, this.sprites.player)

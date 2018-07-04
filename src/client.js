@@ -1,8 +1,8 @@
 const KEY_MAPPING = {
-	left:  ["ArrowLeft"],
-	right: ["ArrowRight"],
-	up:    ["ArrowUp"],
-	down:  ["ArrowDown"],
+	up:    ["ArrowUp", "w",],
+	left:  ["ArrowLeft", "a",],
+	down:  ["ArrowDown", "s",],
+	right: ["ArrowRight", "d",],
 }
 
 class Client {
