@@ -20,6 +20,8 @@ class Player {
 	update({ dtu, input, cells, width, items }) {
 		switch (this.state) {
 		case Player.state.accept:
+			if (input.up && input.down || input.left && input.right)
+				return
 			const pos = this.x + this.y * width
 			if (input.up) {
 				const above = pos - width
@@ -27,21 +29,19 @@ class Player {
 					this.state = Player.state.upleft
 				else if (input.right && cells[above + 1] !== Board.celltype.empty)
 					this.state = Player.state.upright
-				else if (!this.left && !this.right && cells[above] !== Board.celltype.empty)
+				else if (cells[above] !== Board.celltype.empty)
 					this.state = Player.state.up
-			}
-			else if (input.down) {
+			} else if (input.down && !input.up) {
 				const below = pos + width
 				if (input.left && cells[below - 1] !== Board.celltype.empty)
 					this.state = Player.state.downleft
 				else if (input.right && cells[below + 1] !== Board.celltype.empty)
 					this.state = Player.state.downright
-				else if (!this.left && !this.right && cells[below] !== Board.celltype.empty)
+				else if (cells[below] !== Board.celltype.empty)
 					this.state = Player.state.down
-			}
-			else if (input.left && !input.right && cells[pos - 1] !== Board.celltype.empty)
+			} else if (input.left && cells[pos - 1] !== Board.celltype.empty)
 				this.state = Player.state.left
-			else if (input.right && !input.left && cells[pos + 1] !== Board.celltype.empty)
+			else if (input.right && cells[pos + 1] !== Board.celltype.empty)
 				this.state = Player.state.right
 			return
 		case Player.state.left:
