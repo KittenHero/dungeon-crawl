@@ -1,3 +1,5 @@
 node_modules
 package-lock.json
 *.kra
+design/design.html
+design/plantuml-images

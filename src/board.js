@@ -70,8 +70,8 @@ class Board {
 		const sscl = this.sprites.grid_size
 		const scl = sscl * 2
 		const [offset_x, offset_y] = [
-			0.5*width  - scl*this.player.x,
-			0.5*height - scl*this.player.y
+			0.5*width  - scl*(this.player.x + 0.5),
+			0.5*height - scl*(this.player.y + 0.5)
 		]
 
 		const spritefrom = itemtype => {
@@ -101,8 +101,17 @@ class Board {
 				item.pos % this.width, item.pos / this.width | 0, 1, 1
 			)
 		}
+
 		this.player.render(ctx, anim_percent)
 		ctx.restore()
+
+		// Code for dark rooms
+		// Todo: Move it somewhere
+		ctx.beginPath()
+		ctx.arc(width * 0.5, height * 0.5, scl * 5, 0, 2 * Math.PI)
+		ctx.rect(width, 0, - width, height)
+		ctx.fillStyle = "rgba(0,0,0,0.95)"
+		ctx.fill()
 	}
 
 	prerender(img) {
@@ -154,6 +163,7 @@ class Board {
 				x, y, 1, 1
 			)
 		}
+		
 		this.canvas = canvas
 	}
 
